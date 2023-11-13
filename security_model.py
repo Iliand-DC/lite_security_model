@@ -1,4 +1,3 @@
-import numpy as np
 import copy as cp
 import random
 
@@ -13,6 +12,9 @@ class AccessMatrix:
         self.user_list = cp.deepcopy(user_list)
         self.file_list = cp.deepcopy(file_list)
 
+    def set_right(self, userId, fileId, newRight):
+        self.access_matrix[userId][fileId] = newRight
+
     def get_access(self, userId, fileId):
         return self.access_matrix[userId][fileId]
     
@@ -23,7 +25,8 @@ class AccessMatrix:
         return len(self.access_matrix[:,1])
 
     def active_user(self, user_name):
-        self.active_user = user_name
+        global active_user 
+        active_user = user_name
     
     def can_be_changed(self, user_name, file_name):
             right = ''
@@ -36,18 +39,29 @@ class AccessMatrix:
                 return True
             else: False
 
-    def get_access_to_file(self, file_name):
-        user_id = self.user_list.index(self.active_user)
+    def get_access_to_file(self, file_name, doing):
+        user_id = self.user_list.index(active_user)
         file_id = self.file_list.index(file_name)
-        print(self.get_access(user_id, file_id))
+        right = self.get_access(user_id, file_id)
+
+        if right == 'Полные права':
+            print('Доступ получен\n')
+        elif doing in right:
+            print('Доступ получен\n')
+        else:
+            print('В доступе отказано\n')
+
+        print()
 
     def change_rights(self, right, user_name, file_name):
-        if self.can_be_changed(user_name, file_name):
+        if self.can_be_changed(active_user, file_name):
             user_id = int(self.user_list.index(user_name))
             file_id = int(self.file_list.index(file_name))
-            self.access_matrix[user_id, file_id] = right
+            self.set_right(user_id, file_id, right)
+            print('Права успешно сменены\n')
         else: 
             print('Нет прав для смены прав\n')
+        print()
 
     def show_access_level(self, userName):
         user_id = self.user_list.index(userName)
@@ -68,11 +82,13 @@ class AccessMatrix:
             print('Введите номер действия: ')
             choise = input()
             if choise == '1':
-                self.show_access_level(self.active_user)
+                self.show_access_level(active_user)
             elif choise == '2':
                 print('Введите имя файла:', end=' ')
                 fileName = input()
-                self.get_access_to_file(fileName)
+                print('Введите действие:',end=' ')
+                doing = input()
+                self.get_access_to_file(fileName, doing)
             elif choise == '3':
                 print('Введите имя того, кому хотите сменить права доступа:',end=' ')
                 userName = input()
@@ -81,6 +97,7 @@ class AccessMatrix:
                 print('Какие права вы хотите присвоить:', end=' ')
                 newRights = input()
                 self.change_rights(newRights, userName, fileName)
+        print()
                 
 
 file1 = 'file1'
@@ -126,5 +143,5 @@ while choise!='0':
     if choise == '1':
         print('Введите имя пользователя:', end=' ')
         userName = input()
-        matrix_of_access.active_user(userName)
+        matrix_of_access.active_user(str(userName))
         matrix_of_access.menu()
