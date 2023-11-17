@@ -1,5 +1,6 @@
 import copy as cp
 import random
+import dearpygui.dearpygui as dpg
 
 access_variable = ['Нет прав', 'Читать', 'Запись',
                     'Передача прав','Читать/Запись',
@@ -39,65 +40,40 @@ class AccessMatrix:
                 return True
             else: False
 
-    def get_access_to_file(self, file_name, doing):
-        user_id = self.user_list.index(active_user)
+    def get_access_to_file(self, userName, file_name, doing):
+        result = ''
+        user_id = self.user_list.index(userName)
         file_id = self.file_list.index(file_name)
         right = self.get_access(user_id, file_id)
 
         if right == 'Полные права':
-            print('Доступ получен\n')
+            result += ('Доступ получен\n')
         elif doing in right:
-            print('Доступ получен\n')
+            result += ('Доступ получен\n')
         else:
-            print('В доступе отказано\n')
+            result += ('В доступе отказано\n')
 
-        print()
+        return result
 
-    def change_rights(self, right, user_name, file_name):
-        if self.can_be_changed(active_user, file_name):
+    def change_rights(self, right, user_name, file_name, main_user):
+        result = ''
+        if self.can_be_changed(main_user, file_name):
             user_id = int(self.user_list.index(user_name))
             file_id = int(self.file_list.index(file_name))
             self.set_right(user_id, file_id, right)
-            print('Права успешно сменены\n')
+            result += ('Права успешно сменены\n')
         else: 
-            print('Нет прав для смены прав\n')
-        print()
+            result += ('Нет прав для смены прав\n')
+        return result
 
     def show_access_level(self, userName):
+        result = ''
         user_id = self.user_list.index(userName)
-        print('Уровень доступа для пользователя: ',userName)
+        result += 'Уровень доступа для пользователя: ' + userName +'\n'
         for i in range(len(self.file_list)):
-            print('Для ',self.file_list[i], end=': ')
-            print(self.access_matrix[user_id][i])
-        print()
-
-    def menu(self):
-        choise = ''
-        while choise != '4':
-            print('Выберите действие: ')
-            print('1. Просмотреть уровни доступа для всех файлов')
-            print('2. Получить доступ к файлу')
-            print('3. Изменить права другого пользователя')
-            print('4. Выбрать другого пользователя')
-            print('Введите номер действия:', end=' ')
-            choise = input()
-            if choise == '1':
-                self.show_access_level(active_user)
-            elif choise == '2':
-                print('Введите имя файла:', end=' ')
-                fileName = input()
-                print('Введите действие:',end=' ')
-                doing = input()
-                self.get_access_to_file(fileName, doing)
-            elif choise == '3':
-                print('Введите имя того, кому хотите сменить права доступа:',end=' ')
-                userName = input()
-                print('Введите название файла:', end=' ')
-                fileName = input()
-                print('Какие права вы хотите присвоить:', end=' ')
-                newRights = input()
-                self.change_rights(newRights, userName, fileName)
-        print()
+            result += 'Для ' + self.file_list[i] + ': '
+            result += self.access_matrix[user_id][i] + '\n'
+        return result
                 
 
 file1 = 'Файл1'
@@ -130,7 +106,6 @@ def create_matrix(matrix):
         for j in range(len(matrix[i])):
             matrix[i][j] = random.choice(access_variable)
     admin_id = user_array.index('Админчик')
-    print(admin_id)
     for i in range(len(matrix[admin_id])):
         matrix[admin_id][i] = access_variable[len(access_variable)-1]
 
@@ -139,15 +114,60 @@ create_matrix(matrix)
 matrix_of_access = AccessMatrix(matrix, user_array, file_array)
 [matrix_of_access.show_access_level(i) for i in user_array]
 
-choise = ''
-while choise!='0':
-    userName = ''
-    print('1. Войти в пользователя')
-    print('0. Завершить')
-    print('Введите номер действия:', end=' ')
-    choise = input()
-    if choise == '1':
-        print('Введите имя пользователя:', end=' ')
-        userName = input()
-        matrix_of_access.active_user(str(userName))
-        matrix_of_access.menu()
+def showAllFiles(sender, app_data):
+    with dpg.window(autosize=True):
+        dpg.add_text(matrix_of_access.show_access_level(dpg.get_value('newUserName')))
+
+def getAccess(sender, app_data):
+    with dpg.window(autosize=True):
+        dpg.add_text(matrix_of_access.get_access_to_file(dpg.get_value('newUserName'),dpg.get_value('fileName'), dpg.get_value('command')))
+
+def getAccessToFile(sender, app_data):
+    with dpg.window(autosize=True):
+        dpg.add_input_text(label='Имя файла', default_value='', tag='fileName')
+        dpg.add_input_text(label='Команда', default_value='', tag='command')
+        dpg.add_button(label='Выполнить', callback=getAccess)
+
+def change(sender, app_data):
+    with dpg.window(autosize=True):
+        dpg.add_text(matrix_of_access.change_rights(dpg.get_value('accessLevel'), dpg.get_value('user'), dpg.get_value('file'), dpg.get_value('newUserName')))
+
+def changeRights(sender, app_data):
+    with dpg.window(autosize=True):
+        dpg.add_input_text(label='Имя пользователя', default_value='', tag='user')
+        dpg.add_input_text(label='Имя файла', default_value='', tag='file')
+        dpg.add_input_text(label='Новый уровень доступа', default_value='', tag='accessLevel')
+        dpg.add_button(label='Выполнить', callback=change)
+        
+
+def login(sender, app_data):
+    with dpg.window(autosize=True):
+        dpg.add_button(label='Просмотреть уровень доступа ко всем файлам', callback=showAllFiles)
+        dpg.add_button(label='Получить доступ к файлу', callback=getAccessToFile)
+        dpg.add_button(label='Изменить права другого пользователя', callback=changeRights)
+
+
+dpg.create_context()
+
+with dpg.font_registry():
+    with dpg.font("my_font.ttf", 25, default_font=True, tag="Default font") as f:
+        dpg.add_font_range_hint(dpg.mvFontRangeHint_Cyrillic)
+
+# Создать окно с разрешением 2560*1600
+with dpg.window(tag = 'Main', autosize=True):
+    dpg.add_input_text(label="Имя пользователя", default_value="", tag='newUserName')
+    btn = dpg.add_button(label='Войти')
+    dpg.set_item_callback(btn, login)
+    
+dpg.bind_font('Default font')
+dpg.create_viewport(title='Model SID', width=900, height=540)
+dpg.setup_dearpygui()
+dpg.set_primary_window('Main', True)
+dpg.show_viewport()
+dpg.start_dearpygui()
+
+jobs = dpg.get_callback_queue() # retrieves and clears queue
+dpg.run_callbacks(jobs)
+dpg.render_dearpygui_frame()
+
+dpg.destroy_context()
