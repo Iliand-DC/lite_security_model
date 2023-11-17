@@ -75,11 +75,11 @@ class AccessMatrix:
         choise = ''
         while choise != '4':
             print('Выберите действие: ')
-            print('1. Просмотреть уровни доступа для файла')
+            print('1. Просмотреть уровни доступа для всех файлов')
             print('2. Получить доступ к файлу')
             print('3. Изменить права другого пользователя')
             print('4. Выбрать другого пользователя')
-            print('Введите номер действия: ')
+            print('Введите номер действия:', end=' ')
             choise = input()
             if choise == '1':
                 self.show_access_level(active_user)
@@ -100,17 +100,22 @@ class AccessMatrix:
         print()
                 
 
-file1 = 'file1'
-file2 = 'file2'
-file3 = 'file3'
+file1 = 'Файл1'
+file2 = 'Файл2'
+file3 = 'Файл3'
 
 file_array = [file1, file2, file3]
 
-user1 = 'Admin'
-user2 = 'User'
-user3 = 'Guest'
+user1 = 'Админчик'
+user2 = 'Юзверь1'
+user3 = 'Юзверь2'
+user4 = 'Юзверь3'
+user5 = 'Юзверь4'
+user6 = 'Гост1'
+user7 = 'Гост2'
+user8 = 'Гост3'
 
-user_array = [user1, user2, user3]
+user_array = [user1, user2, user3, user4, user5, user6, user7, user8]
 
 def init_matrix(users, files):
     matrix = []
@@ -124,7 +129,7 @@ def create_matrix(matrix):
     for i in range((len(matrix))):
         for j in range(len(matrix[i])):
             matrix[i][j] = random.choice(access_variable)
-    admin_id = user_array.index('Admin')
+    admin_id = user_array.index('Админчик')
     print(admin_id)
     for i in range(len(matrix[admin_id])):
         matrix[admin_id][i] = access_variable[len(access_variable)-1]
@@ -139,6 +144,7 @@ while choise!='0':
     userName = ''
     print('1. Войти в пользователя')
     print('0. Завершить')
+    print('Введите номер действия:', end=' ')
     choise = input()
     if choise == '1':
         print('Введите имя пользователя:', end=' ')
