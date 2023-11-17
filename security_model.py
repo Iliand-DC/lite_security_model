@@ -16,6 +16,9 @@ class AccessMatrix:
     def set_right(self, userId, fileId, newRight):
         self.access_matrix[userId][fileId] = newRight
 
+    def get_users(self):
+        return self.user_list
+
     def get_access(self, userId, fileId):
         return self.access_matrix[userId][fileId]
     
@@ -116,53 +119,66 @@ matrix_of_access = AccessMatrix(matrix, user_array, file_array)
 
 def showAllFiles(sender, app_data):
     with dpg.window(autosize=True):
-        dpg.add_text(matrix_of_access.show_access_level(dpg.get_value('newUserName')))
+        dpg.add_text(matrix_of_access.show_access_level(dpg.get_value('activeUserName')))
 
 def getAccess(sender, app_data):
     with dpg.window(autosize=True):
-        dpg.add_text(matrix_of_access.get_access_to_file(dpg.get_value('newUserName'),
+        dpg.add_text(matrix_of_access.get_access_to_file(dpg.get_value('activeUserName'),
                                                          dpg.get_value('fileName'), 
                                                          dpg.get_value('command')))
 
-def getAccessToFile(sender, app_data):
-    with dpg.window(label='Получить доступ к файлу',autosize=True):
-        dpg.add_input_text(label='Имя файла', tag='fileName')
-        dpg.add_input_text(label='Команда', tag='command')
-        dpg.add_button(label='Выполнить', callback=getAccess)
-
 def change(sender, app_data):
     with dpg.window(autosize=True):
-        dpg.add_text(matrix_of_access.change_rights(dpg.get_value('accessLevel'), 
-                                                    dpg.get_value('user'), 
-                                                    dpg.get_value('file'), 
-                                                    dpg.get_value('newUserName')))
-
-def changeRights(sender, app_data):
-    with dpg.window(label='Изменить права пользователя',autosize=True):
-        dpg.add_input_text(label='Имя пользователя', default_value='', tag='user')
-        dpg.add_input_text(label='Имя файла', default_value='', tag='file')
-        dpg.add_input_text(label='Новый уровень доступа', default_value='', tag='accessLevel')
-        dpg.add_button(label='Выполнить', callback=change)
+        dpg.add_text(matrix_of_access.change_rights(dpg.get_value('newRight'), 
+                                                    dpg.get_value('changeRightUser'), 
+                                                    dpg.get_value('changeRightFile'), 
+                                                    dpg.get_value('activeUserName')))
         
-
-def login(sender, app_data):
-    with dpg.window(autosize=True):
-        dpg.add_button(label='Просмотреть уровень доступа ко всем файлам', callback=showAllFiles)
-        dpg.add_button(label='Получить доступ к файлу', callback=getAccessToFile)
-        dpg.add_button(label='Изменить права другого пользователя', callback=changeRights)
-
-
 dpg.create_context()
+
+def showAllItems():
+    dpg.show_item('showAllButton')
+    dpg.show_item('fileName')
+    dpg.show_item('command')
+    dpg.show_item('getAccessToFile')
+    dpg.show_item('changeRightUser')
+    dpg.show_item('changeRightFile')
+    dpg.show_item('newRight')
+    dpg.show_item('changeRightButton')
+
+def hideAllItems():
+    dpg.hide_item('showAllButton')
+    dpg.hide_item('fileName')
+    dpg.hide_item('command')
+    dpg.hide_item('getAccessToFile')
+    dpg.hide_item('changeRightUser')
+    dpg.hide_item('changeRightFile')
+    dpg.hide_item('newRight')
+    dpg.hide_item('changeRightButton')
 
 with dpg.font_registry():
     with dpg.font("my_font.ttf", 25, default_font=True, tag="Default font") as f:
         dpg.add_font_range_hint(dpg.mvFontRangeHint_Cyrillic)
 
+def isUser():
+    if dpg.get_value('activeUserName') in matrix_of_access.get_users():
+        showAllItems()
+    else:
+        hideAllItems()
+
 # Создать окно с разрешением 2560*1600
 with dpg.window(tag = 'Main', autosize=True):
-    dpg.add_input_text(label="Имя пользователя", default_value="", tag='newUserName')
-    btn = dpg.add_button(label='Войти')
-    dpg.set_item_callback(btn, login)
+    dpg.add_input_text(label="Имя пользователя", default_value="", tag='activeUserName', callback=isUser)
+    dpg.add_button(label='Просмотреть уровень доступа ко всем файлам', callback=showAllFiles, tag='showAllButton', show=False)
+    dpg.add_spacing(count=15)
+    dpg.add_input_text(label='Имя файла', default_value='', tag='fileName', show=False)
+    dpg.add_input_text(label='Команда', default_value='', tag='command', show=False)
+    dpg.add_button(label='Получить доступ к файлу', callback=getAccess, show=False, tag='getAccessToFile')
+    dpg.add_spacing(count=15)
+    dpg.add_input_text(label='Имя пользователя для смены прав', default_value='',tag='changeRightUser', show=False)
+    dpg.add_input_text(label='Имя файла для смены прав', default_value='', tag='changeRightFile', show=False)
+    dpg.add_input_text(label='Новые права доступа',default_value='',tag='newRight', show=False)
+    dpg.add_button(label='Изменить права пользователя', callback=change, show=False, tag='changeRightButton')
     
 dpg.bind_font('Default font')
 dpg.create_viewport(title='Модель безопасности', width=900, height=540)
