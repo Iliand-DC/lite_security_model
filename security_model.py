@@ -120,20 +120,25 @@ def showAllFiles(sender, app_data):
 
 def getAccess(sender, app_data):
     with dpg.window(autosize=True):
-        dpg.add_text(matrix_of_access.get_access_to_file(dpg.get_value('newUserName'),dpg.get_value('fileName'), dpg.get_value('command')))
+        dpg.add_text(matrix_of_access.get_access_to_file(dpg.get_value('newUserName'),
+                                                         dpg.get_value('fileName'), 
+                                                         dpg.get_value('command')))
 
 def getAccessToFile(sender, app_data):
-    with dpg.window(autosize=True):
-        dpg.add_input_text(label='Имя файла', default_value='', tag='fileName')
-        dpg.add_input_text(label='Команда', default_value='', tag='command')
+    with dpg.window(label='Получить доступ к файлу',autosize=True):
+        dpg.add_input_text(label='Имя файла', tag='fileName')
+        dpg.add_input_text(label='Команда', tag='command')
         dpg.add_button(label='Выполнить', callback=getAccess)
 
 def change(sender, app_data):
     with dpg.window(autosize=True):
-        dpg.add_text(matrix_of_access.change_rights(dpg.get_value('accessLevel'), dpg.get_value('user'), dpg.get_value('file'), dpg.get_value('newUserName')))
+        dpg.add_text(matrix_of_access.change_rights(dpg.get_value('accessLevel'), 
+                                                    dpg.get_value('user'), 
+                                                    dpg.get_value('file'), 
+                                                    dpg.get_value('newUserName')))
 
 def changeRights(sender, app_data):
-    with dpg.window(autosize=True):
+    with dpg.window(label='Изменить права пользователя',autosize=True):
         dpg.add_input_text(label='Имя пользователя', default_value='', tag='user')
         dpg.add_input_text(label='Имя файла', default_value='', tag='file')
         dpg.add_input_text(label='Новый уровень доступа', default_value='', tag='accessLevel')
@@ -160,14 +165,10 @@ with dpg.window(tag = 'Main', autosize=True):
     dpg.set_item_callback(btn, login)
     
 dpg.bind_font('Default font')
-dpg.create_viewport(title='Model SID', width=900, height=540)
+dpg.create_viewport(title='Модель безопасности', width=900, height=540)
 dpg.setup_dearpygui()
 dpg.set_primary_window('Main', True)
 dpg.show_viewport()
 dpg.start_dearpygui()
-
-jobs = dpg.get_callback_queue() # retrieves and clears queue
-dpg.run_callbacks(jobs)
-dpg.render_dearpygui_frame()
 
 dpg.destroy_context()
